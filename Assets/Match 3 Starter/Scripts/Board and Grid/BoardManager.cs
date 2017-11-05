@@ -96,14 +96,31 @@ public class BoardManager : MonoBehaviour {
     }
     public IEnumerator FindNullTiles()
     {
-        for (int x = 0; x < xSize; x++)
+        bool foundnull = true;
+        float shiftDelay = .4f;
+        while (foundnull)
         {
-            for (int y = 0; y < ySize; y++)
+            foundnull = false;
+            yield return new WaitForSeconds(shiftDelay);// 4
+            for (int x = 0; x < xSize; x++)
             {
-                if (tiles[x, y].GetComponent<SpriteRenderer>().sprite == null)
+                for (int y = 0; y < ySize-1; y++)
                 {
-                    yield return StartCoroutine(ShiftTilesDown(x, 0));
-                    break;
+                    if (tiles[x, y].GetComponent<SpriteRenderer>().sprite == null)
+                    {
+                        foundnull = true;
+                        Vector3 temp = tiles[x, y].transform.position;
+                        GameObject tempGO = tiles[x,y];
+                        tempGO.transform.position = tiles[x, y + 1].transform.position;
+                        tiles[x, y] = tiles[x, y + 1];
+                        tiles[x, y].transform.position = temp;
+                        tiles[x, y + 1] = tempGO;
+  
+                    }
+                }
+                if(tiles[x, ySize-1].GetComponent<SpriteRenderer>().sprite == null)
+                {
+                    tiles[x, ySize - 1]=Instantiate(tileList[Random.Range(0, tileList.Count)], tiles[x,ySize-1].transform.position, tiles[x, ySize - 1].transform.rotation);
                 }
             }
         }
@@ -111,7 +128,7 @@ public class BoardManager : MonoBehaviour {
     private IEnumerator ShiftTilesDown(int x, int yStart, float shiftDelay = .0f)
     {
         IsShifting = true;
-        List<SpriteRenderer> renders = new List<SpriteRenderer>();
+        List<int> renders = new List<int>();
         int nullCount = 0;
         bool nullfound = false;
         for (int y = yStart; y < ySize; y++)
@@ -123,7 +140,7 @@ public class BoardManager : MonoBehaviour {
                 nullfound = true;
             }
             if (nullfound) 
-                renders.Add(render);
+                renders.Add(y);
         }
 
         for (int i = 0; i < nullCount; i++)
@@ -131,20 +148,20 @@ public class BoardManager : MonoBehaviour {
             yield return new WaitForSeconds(shiftDelay);// 4
             if (renders.Count == 1)
             {
-                renders[0].sprite = GetNewSprite(x, ySize - 1);
+                tiles[x,renders[0]] = GetNewTile(x, ySize - 1);
             }
             int k;
 
-            for(k=0;k< renders.Count - 1; k++) 
+            for (k = 0; k < renders.Count - 1; k++)
             {
-                if (renders[k].sprite == null)
+                if (tiles[x, renders[k]].GetComponent < SpriteRenderer>().sprite == null)
                     break;
             }
             for (; k < renders.Count - 1; k++)
             { // 5
 
-                renders[k].sprite = renders[k + 1].sprite;
-                renders[k + 1].sprite = GetNewSprite(x, ySize - 1); // 6
+                tiles[x, renders[k]] = tiles[x, renders[k+1]];
+                tiles[x, renders[k+1]] = GetNewTile(x, ySize - 1); // 6
             }
             
         }
@@ -169,5 +186,25 @@ public class BoardManager : MonoBehaviour {
         }
 
         return possibleCharacters[Random.Range(0, possibleCharacters.Count)];
+    }
+    private GameObject GetNewTile(int x, int y)
+    {
+        List<GameObject> possibleTiles = new List<GameObject>();
+        possibleTiles.AddRange(tileList);
+
+        //if (x > 0)
+        //{
+        //    possibleTiles.Remove(tiles[x - 1, y].GetComponent<SpriteRenderer>().sprite);
+        //}
+        //if (x < xSize - 1)
+        //{
+        //    possibleTiles.Remove(tiles[x + 1, y].GetComponent<SpriteRenderer>().sprite);
+        //}
+        //if (y > 0)
+        //{
+        //    possibleTiles.Remove(tiles[x, y - 1].GetComponent<SpriteRenderer>().sprite);
+        //}
+        //return Instantiate(possibleTiles[Random.Range(0, possibleTiles.Count)], new Vector3(startX + (xOffset * x), startY + (yOffset * y), 0), tile.transform.rotation);
+        return possibleTiles[Random.Range(0, possibleTiles.Count)];
     }
 }
