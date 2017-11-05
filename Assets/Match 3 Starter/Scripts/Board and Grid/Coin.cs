@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Health : Tile {
+public class Coin : Tile {
 
+	// Use this for initialization
 
 }
