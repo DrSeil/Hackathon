@@ -96,11 +96,30 @@ public class Tile : MonoBehaviour {
     private void OnMouseUp()
     {
         mousedown = false;
-        for(int i=selectedPath.Count-1; i>=0;i--)
+        if (selectedPath.Count < 3)
+        {
+            for (int i = selectedPath.Count - 1; i >= 0; i--)
+            {
+                selectedPath[i].GetComponent<Tile>().Deselect();
+                selectedPath.Remove(selectedPath[i]);
+            }
+        }
+        else
+        {
+            ClearPath();
+        }
+    }
+    private void ClearPath()
+    {
+        for(int i =0;i<selectedPath.Count;i++)
         {
             selectedPath[i].GetComponent<Tile>().Deselect();
-            selectedPath.Remove(selectedPath[i]);
+            selectedPath[i].GetComponent<SpriteRenderer>().sprite = null;
         }
+        selectedPath.Clear();
+        StopCoroutine(BoardManager.instance.FindNullTiles());
+        StartCoroutine(BoardManager.instance.FindNullTiles());
+
     }
     private bool isAdjacent()
     {
