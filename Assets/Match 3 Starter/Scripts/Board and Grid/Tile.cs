@@ -27,7 +27,7 @@ using System.Collections.Generic;
 public class Tile : MonoBehaviour {
     private static Color selectedColor = new Color(.5f, .5f, .5f, 1.0f);
     private static Tile previousSelected = null;
-    private static List<GameObject> selectedPath = new List<GameObject>();
+    public static List<GameObject> selectedPath = new List<GameObject>();
 	private SpriteRenderer render;
 	private bool isSelected = false;
     private static bool mousedown;
@@ -57,7 +57,7 @@ public class Tile : MonoBehaviour {
 	private void Deselect() {
 		isSelected = false;
 		render.color = Color.white;
-		previousSelected = null;
+		//previousSelected = null;
 	}
     private void OnMouseDown()
     {
@@ -72,11 +72,24 @@ public class Tile : MonoBehaviour {
     {
         if(mousedown)
         {
-            if (isAdjacent() && previousSelected.render.sprite == render.sprite)
+            if(previousSelected.render.sprite == render.sprite)
             {
-                selectedPath.Add(gameObject);
-                Select();
+                if(selectedPath.Contains(gameObject))
+                {
+                    int ind = selectedPath.IndexOf(gameObject);
+                    for(int i=selectedPath.Count-1;i>ind;i--)
+                    {
+                        selectedPath[i].GetComponent<Tile>().Deselect();
+                        selectedPath.RemoveAt(i);
+                    }
+                }
+                else if (isAdjacent())
+                {
+                    selectedPath.Add(gameObject);
+                    Select();
+                }
             }
+
         }
     }
     private void OnMouseUp()

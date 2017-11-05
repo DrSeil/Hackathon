@@ -31,14 +31,30 @@ public class BoardManager : MonoBehaviour {
 	public int xSize, ySize;
 
 	private GameObject[,] tiles;
-
+    private List<GameObject> path;
 	public bool IsShifting { get; set; }
-
-	void Start () {
+    public Color c1 = Color.yellow;
+    public Color c2 = Color.red;
+    public int lengthOfLineRenderer = 20;
+    void Start () {
 		instance = GetComponent<BoardManager>();
 
 		Vector2 offset = tile.GetComponent<SpriteRenderer>().bounds.size;
         CreateBoard(offset.x, offset.y);
+        LineRenderer lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer.material = new Material(Shader.Find("Particles/Additive"));
+        lineRenderer.widthMultiplier = 0.2f;
+        lineRenderer.positionCount = lengthOfLineRenderer;
+
+        // A simple 2 color gradient with a fixed alpha of 1.0f.
+        float alpha = 1.0f;
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(c1, 0.0f), new GradientColorKey(c2, 1.0f) },
+            new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
+            );
+        lineRenderer.colorGradient = gradient;
+        lineRenderer.loop = false;
     }
 
 	private void CreateBoard (float xOffset, float yOffset) {
@@ -56,6 +72,26 @@ public class BoardManager : MonoBehaviour {
                 newTile.GetComponent<SpriteRenderer>().sprite = newSprite; // 3
             }
         }
+    }
+    private void Update()
+    {
+        LineRenderer lineRenderer = GetComponent<LineRenderer>();
+        Vector3[] positions = new Vector3[Tile.selectedPath.Count];
+        //if (Tile.selectedPath.Count>0)
+        //{
+        //    temp1 = Tile.selectedPath[0];
+        //    for (int i=1;i<Tile.selectedPath.Count;i++)
+        //    {
+        //        temp2 = Tile.selectedPath[i];
+        //        LineRenderer.SetPositions()
+        //    }
+        //}
+        for(int i =0;i<Tile.selectedPath.Count;i++)
+        {
+            positions[i] = Tile.selectedPath[i].transform.position;
+        }
+        lineRenderer.positionCount = positions.Length;
+        lineRenderer.SetPositions(positions);
     }
 
 }
