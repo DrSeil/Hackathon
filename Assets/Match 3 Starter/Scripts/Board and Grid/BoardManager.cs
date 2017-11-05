@@ -27,6 +27,7 @@ using System.Collections.Generic;
 public class BoardManager : MonoBehaviour {
 	public static BoardManager instance;
 	public List<Sprite> characters = new List<Sprite>();
+    public List<GameObject> tileList = new List<GameObject>();
 	public GameObject tile;
 	public int xSize, ySize;
 
@@ -107,7 +108,7 @@ public class BoardManager : MonoBehaviour {
             }
         }
     }
-    private IEnumerator ShiftTilesDown(int x, int yStart, float shiftDelay = .03f)
+    private IEnumerator ShiftTilesDown(int x, int yStart, float shiftDelay = .0f)
     {
         IsShifting = true;
         List<SpriteRenderer> renders = new List<SpriteRenderer>();
@@ -132,9 +133,9 @@ public class BoardManager : MonoBehaviour {
             {
                 renders[0].sprite = GetNewSprite(x, ySize - 1);
             }
-            int k = i;
+            int k;
 
-            for(k=0;k<i;k++) 
+            for(k=0;k< renders.Count - 1; k++) 
             {
                 if (renders[k].sprite == null)
                     break;
