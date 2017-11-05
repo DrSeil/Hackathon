@@ -82,6 +82,7 @@ public class Tile : MonoBehaviour {
                         selectedPath[i].GetComponent<Tile>().Deselect();
                         selectedPath.RemoveAt(i);
                     }
+                    previousSelected = gameObject.GetComponent<Tile>();
                 }
                 else if (isAdjacent())
                 {
