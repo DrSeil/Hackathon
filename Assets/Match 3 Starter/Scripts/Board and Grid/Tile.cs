@@ -28,7 +28,7 @@ public class Tile : MonoBehaviour {
     private static Color selectedColor = new Color(.5f, .5f, .5f, 1.0f);
     private static Tile previousSelected = null;
     public static List<GameObject> selectedPath = new List<GameObject>();
-	private SpriteRenderer render;
+	public SpriteRenderer render;
 	private bool isSelected = false;
     private static bool mousedown;
 
@@ -36,10 +36,14 @@ public class Tile : MonoBehaviour {
     private Vector2[] adjacentDirectionsVert = new Vector2[] { Vector2.up, Vector2.zero, Vector2.down};
     private Vector2[] adjacentDirectionsHorz = new Vector2[] { Vector2.left, Vector2.zero, Vector2.right};
 
+    public int x;
+    public int y;
 
 
-    void Awake() {
+    void Start() {
 		render = GetComponent<SpriteRenderer>();
+        //print(render.sprite);
+        //print("TEST"+x+ ' '+ y);
     }
     private void StartPath()
     {
@@ -61,10 +65,15 @@ public class Tile : MonoBehaviour {
 	}
     private void OnMouseDown()
     {
-        if (render.sprite == null || BoardManager.instance.IsShifting)
+        //print("mouse Down");
+        //render = GetComponent<SpriteRenderer>();
+        if (!render.enabled  || BoardManager.instance.IsShifting)
         {
+            print(render);
+            print(BoardManager.instance.IsShifting);
             return;
         }
+        //print("Moving ON");
         mousedown = true;
         StartPath();
     }
@@ -106,52 +115,60 @@ public class Tile : MonoBehaviour {
         }
         else
         {
+            GUIManager.instance.MoveCounter--;
             ClearPath();
         }
     }
+    public virtual void OnClear()
+    {
+
+    }
     private void ClearPath()
     {
+        OnClear();
         for(int i =0;i<selectedPath.Count;i++)
         {
             selectedPath[i].GetComponent<Tile>().Deselect();
-            selectedPath[i].GetComponent<SpriteRenderer>().sprite = null;
+            selectedPath[i].GetComponent<SpriteRenderer>().enabled =false;
         }
         selectedPath.Clear();
-        StopCoroutine(BoardManager.instance.FindNullTiles());
+        //StopCoroutine(BoardManager.instance.FindNullTiles());
         StartCoroutine(BoardManager.instance.FindNullTiles());
+        //BoardManager.instance.FindNullTiles();
 
     }
-    private bool isAdjacent()
+    public virtual bool isAdjacent()
     {
-        GameObject tempVert;
-        GameObject temp;
-        for(int i =0; i<adjacentDirectionsVert.Length;i++)
-        {
-            if(adjacentDirectionsVert[i]!=Vector2.zero)
-            {
-                tempVert = GetAdjacent(adjacentDirectionsVert[i]);
-            }
-            else
-            {
-                tempVert = gameObject;
-            }
-            for(int j=0;j<adjacentDirectionsHorz.Length;j++)
-            {
-                if(adjacentDirectionsHorz[j]!=Vector2.zero&&tempVert)
-                {
-                    temp = tempVert.GetComponent<Tile>().GetAdjacent(adjacentDirectionsHorz[j]);
-                }
-                else
-                {
-                    temp = tempVert;
-                }
-                if(previousSelected.gameObject == temp)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return System.Math.Abs(previousSelected.y - y) <= 1 && System.Math.Abs(previousSelected.x - x) <= 1;
+        //GameObject tempVert;
+        //GameObject temp;
+        //for(int i =0; i<adjacentDirectionsVert.Length;i++)
+        //{
+        //    if(adjacentDirectionsVert[i]!=Vector2.zero)
+        //    {
+        //        tempVert = GetAdjacent(adjacentDirectionsVert[i]);
+        //    }
+        //    else
+        //    {
+        //        tempVert = gameObject;
+        //    }
+        //    for(int j=0;j<adjacentDirectionsHorz.Length;j++)
+        //    {
+        //        if(adjacentDirectionsHorz[j]!=Vector2.zero&&tempVert)
+        //        {
+        //            temp = tempVert.GetComponent<Tile>().GetAdjacent(adjacentDirectionsHorz[j]);
+        //        }
+        //        else
+        //        {
+        //            temp = tempVert;
+        //        }
+        //        if(previousSelected.gameObject == temp)
+        //        {
+        //            return true;
+        //        }
+        //    }
+        //}
+        //return false;
     }
     private GameObject GetAdjacent(Vector2 castDir)
     {

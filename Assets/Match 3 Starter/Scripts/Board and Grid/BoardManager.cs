@@ -24,6 +24,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+
 public class BoardManager : MonoBehaviour {
 	public static BoardManager instance;
 	public List<Sprite> characters = new List<Sprite>();
@@ -67,6 +68,8 @@ public class BoardManager : MonoBehaviour {
 		for (int x = 0; x < xSize; x++) {
 			for (int y = 0; y < ySize; y++) {
 				GameObject newTile = Instantiate(tileList[Random.Range(0,tileList.Count)], new Vector3(startX + (xOffset * x), startY + (yOffset * y), 0), tile.transform.rotation);
+                newTile.GetComponent<Tile>().x = x;
+                newTile.GetComponent<Tile>().y = y;
 				tiles[x, y] = newTile;
                 newTile.transform.parent = transform; // 1
                 //Sprite newSprite = characters[Random.Range(0, characters.Count)]; // 2
@@ -96,33 +99,63 @@ public class BoardManager : MonoBehaviour {
     }
     public IEnumerator FindNullTiles()
     {
+        float shiftDelay = .15f;
         bool foundnull = true;
-        float shiftDelay = .4f;
-        while (foundnull)
+       
+        foundnull = false;
+        //print("DROPPING" + xSize +' ' +ySize);
+        //print("Ill be back");
+        yield return new WaitForSeconds(shiftDelay);// 4
+        //print("im back");
+        for (int x = 0; x < xSize; x++)
         {
-            foundnull = false;
-            yield return new WaitForSeconds(shiftDelay);// 4
-            for (int x = 0; x < xSize; x++)
+
+            for (int y = 0; y < ySize - 1; y++)
             {
-                for (int y = 0; y < ySize-1; y++)
+                if (!tiles[x,y].GetComponent<SpriteRenderer>().enabled)
                 {
-                    if (tiles[x, y].GetComponent<SpriteRenderer>().sprite == null)
-                    {
-                        foundnull = true;
-                        Vector3 temp = tiles[x, y].transform.position;
-                        GameObject tempGO = tiles[x,y];
-                        tempGO.transform.position = tiles[x, y + 1].transform.position;
-                        tiles[x, y] = tiles[x, y + 1];
-                        tiles[x, y].transform.position = temp;
-                        tiles[x, y + 1] = tempGO;
-  
-                    }
+                    //if(tiles[x, y+1].GetComponent<SpriteRenderer>().sprite == null)
+                    foundnull = true;
+                    Vector3 temp = tiles[x, y].transform.position;
+                    GameObject tempGO = tiles[x, y];
+                    tempGO.transform.position = tiles[x, y + 1].transform.position;
+                    tiles[x, y] = tiles[x, y + 1];
+                    tiles[x, y].GetComponent<Tile>().y = y;
+                    tiles[x, y].transform.position = temp;
+                    tiles[x, y + 1] = tempGO;
+
                 }
-                if(tiles[x, ySize-1].GetComponent<SpriteRenderer>().sprite == null)
-                {
-                    tiles[x, ySize - 1]=Instantiate(tileList[Random.Range(0, tileList.Count)], tiles[x,ySize-1].transform.position, tiles[x, ySize - 1].transform.rotation);
-                }
+                //print(x + ' ' + y);
             }
+            if (!tiles[x, ySize - 1].GetComponent<SpriteRenderer>().enabled)
+            {
+                try
+                {
+                    GameObject tempGO = tiles[x, ySize - 1];
+                    Destroy(tempGO);
+                }
+                catch (System.Exception e) { print(e); Debug.LogError(e); print(e); }
+                tiles[x, ySize - 1] = Instantiate(tileList[Random.Range(0, tileList.Count)], tiles[x, ySize - 1].transform.position, tiles[x, ySize - 1].transform.rotation);
+                //if(tiles[x, ySize - 1].GetComponent<Tile>().render.sprite ==null)
+                //{
+                //    print("WHAT");
+                //}
+                tiles[x, ySize - 1].GetComponent<Tile>().y = ySize - 1;
+                tiles[x, ySize - 1].GetComponent<Tile>().x = x;
+
+            }
+            
+        //for (int x = 0; x < xSize; x++)
+        //{
+        //    if (!tiles[x, ySize - 1].GetComponent<SpriteRenderer>().enabled)
+        //    {
+        //        print("really?");
+        //    }
+        //}
+        }
+        if(foundnull)
+        {
+            StartCoroutine(FindNullTiles());
         }
     }
     private IEnumerator ShiftTilesDown(int x, int yStart, float shiftDelay = .0f)
@@ -134,7 +167,7 @@ public class BoardManager : MonoBehaviour {
         for (int y = yStart; y < ySize; y++)
         {  // 1
             SpriteRenderer render = tiles[x, y].GetComponent<SpriteRenderer>();
-            if (render.sprite == null)
+            if (!render.enabled)
             { // 2
                 nullCount++;
                 nullfound = true;
@@ -154,7 +187,7 @@ public class BoardManager : MonoBehaviour {
 
             for (k = 0; k < renders.Count - 1; k++)
             {
-                if (tiles[x, renders[k]].GetComponent < SpriteRenderer>().sprite == null)
+                if (!tiles[x, renders[k]].GetComponent < SpriteRenderer>().enabled)
                     break;
             }
             for (; k < renders.Count - 1; k++)
